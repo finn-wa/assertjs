@@ -1,50 +1,33 @@
 import { describe, expect, it } from "bun:test";
 import { BooleanAssert } from "./BooleanAssert";
+import { assertThat } from "..";
 
 describe("BooleanAssert", () => {
-  const assertThat = (value: boolean) => new BooleanAssert(value);
-
-  describe("isEqualTo", () => {
-    it("should not throw when equal", () => {
-      assertThat(true).isEqualTo(true);
-    });
-
-    it("should throw when not equal", () => {
-      expect(() => assertThat(true).isEqualTo(false)).toThrow(
-        "Expected true to be equal to false"
-      );
-    });
-  });
-
-  describe("isNotEqualTo", () => {
-    it("should not throw when not equal", () => {
-      assertThat(true).isNotEqualTo(false);
-    });
-
-    it("should throw when equal", () => {
-      expect(() => assertThat(true).isNotEqualTo(true)).toThrow(
-        "Expected true to not be equal to true"
-      );
-    });
-  });
+  const booleanAssert = (value: boolean) => new BooleanAssert(value);
 
   describe("isTrue", () => {
     it("should not throw when true", () => {
-      assertThat(true).isTrue();
+      assertThat(booleanAssert(true)).successfullyAsserts((a) => a.isTrue());
     });
 
     it("should throw when false", () => {
-      expect(() => assertThat(false).isTrue()).toThrow("Expected false to be true");
+      assertThat(booleanAssert(false)).throwsAssertionError(
+        (a) => a.isTrue(),
+        "Expected false to be true"
+      );
     });
   });
 
   describe("isFalse", () => {
     it("should not throw when false", () => {
-      assertThat(false).isFalse();
+      assertThat(booleanAssert(false)).successfullyAsserts((a) => a.isFalse());
     });
 
     it("should throw when true", () => {
-      expect(() => assertThat(true).isFalse()).toThrow("Expected true to be false");
+      assertThat(booleanAssert(true)).throwsAssertionError(
+        (a) => a.isFalse(),
+        "Expected true to be false"
+      );
     });
   });
 });

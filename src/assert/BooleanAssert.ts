@@ -1,3 +1,4 @@
+import { AssertionError } from "../errors/AssertionError";
 import { AbstractAssert } from "./AbstractAssert";
 
 /**
@@ -7,18 +8,24 @@ export class BooleanAssert extends AbstractAssert<boolean> {
   /**
    * Asserts that the value is true.
    */
-  isTrue(): void {
-    if (this.value !== true) {
-      throw new Error(`Expected ${this.value} to be true`);
+  isTrue(): this {
+    if (this.value === true) {
+      return this;
     }
+    throw new AssertionError(
+      this.getDescription("Expected {} to be true", this.value)
+    );
   }
 
   /**
    * Asserts that the value is false.
    */
-  isFalse(): void {
-    if (this.value !== false) {
-      throw new Error(`Expected ${this.value} to be false`);
+  isFalse(): this {
+    if (this.value === false) {
+      return this;
     }
+    throw new AssertionError(
+      this.getDescription("Expected {} to be false", this.value)
+    );
   }
 }

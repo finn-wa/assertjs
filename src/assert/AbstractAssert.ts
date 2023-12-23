@@ -1,8 +1,9 @@
-import { AssertionError } from "./AssertionError";
+import { AssertionError } from "../errors/AssertionError";
+import { format } from "../util/StringUtils";
 
 /** Base class for all assertions. */
 export abstract class AbstractAssert<T = unknown> {
-  protected overridingErrorMessage: string | null = null;
+  protected descriptionSupplier?: () => string;
 
   constructor(readonly value: T) {}
 
@@ -13,14 +14,12 @@ export abstract class AbstractAssert<T = unknown> {
    * @returns this assert object for chaining
    */
   isEqualTo(other: T): this {
-    if (this.value !== other) {
-      throw this.assertionError(
-        `Expected ${this.value} to be equal to ${other}`,
-        this.value,
-        other
-      );
+    if (this.value === other) {
+      return this;
     }
-    return this;
+    throw new AssertionError(
+      this.getDescription("Expected {} to equal {}", this.value, other)
+    );
   }
 
   /**
@@ -30,14 +29,12 @@ export abstract class AbstractAssert<T = unknown> {
    * @returns this assert object for chaining
    */
   isNotEqualTo(other: T): this {
-    if (this.value === other) {
-      throw this.assertionError(
-        `Expected ${this.value} to not be equal to ${other}`,
-        this.value,
-        other
-      );
+    if (this.value !== other) {
+      return this;
     }
-    return this;
+    throw new AssertionError(
+      this.getDescription("Expected {} not to equal {}", this.value, other)
+    );
   }
 
   /**
@@ -48,46 +45,67 @@ export abstract class AbstractAssert<T = unknown> {
    * @returns this assert object for chaining
    */
   isSameAs(other: T): this {
-    if (this.value !== other) {
-      throw this.assertionError(
-        `Expected ${this.value} to be the same as ${other}`,
+    if (this.value === other) {
+      return this;
+    }
+    throw new AssertionError(
+      this.getDescription(
+        "Expected {} to be the same as {} using strict equality",
         this.value,
         other
-      );
+      )
+    );
+  }
+
+  /**
+   * Asserts that the value is not the same as the other value using the strict
+   * equality operator.
+   *
+   * @param other the other value
+   * @returns this assert object for chaining
+   */
+  isNotSameAs(other: T): this {
+    if (this.value !== other) {
+      return this;
+    }
+    throw new AssertionError(
+      this.getDescription(
+        "Expected {} not to be the same as the other value using strict equality",
+        this.value
+      )
+    );
+  }
+
+  /**
+   * Sets the description of the assertion. This will be used in the error
+   * message if an assertion error is thrown.
+   *
+   * @param description the description or lazy function returning a description
+   * @returns this assert object for chaining
+   */
+  describedAs(description: string | (() => string)): this {
+    if (typeof description === "function") {
+      this.descriptionSupplier = description;
+    } else if (typeof description === "string") {
+      this.descriptionSupplier = () => description;
+    } else {
+      throw new Error("Invalid description: " + description);
     }
     return this;
   }
 
   /**
-   * Sets the description of the assertion. This will be used as the error
-   * message if an assertion error is thrown.
+   * Prepends the assertion description to the provided detail message, if it
+   * was set. Otherwise, the detail message is returned as is.
    *
-   * @param message the message
-   * @returns this assert object for chaining
+   * @param detail the detail message
+   * @param formatArgs the format arguments for the detail message
+   * @returns the description
    */
-  describedAs(message: string): this {
-    this.overridingErrorMessage = message;
-    return this;
-  }
-
-  /**
-   * Returns an Assertion error with the given message, or the overriding
-   * message if set with {@link describedAs}.
-   *
-   * @param defaultMessage the default message
-   * @param expected the expected value
-   * @param actual the actual value
-   * @returns the assertion error
-   */
-  protected assertionError(
-    defaultMessage: string,
-    expected: unknown,
-    actual: unknown
-  ): AssertionError {
-    return new AssertionError(
-      this.overridingErrorMessage ?? defaultMessage,
-      expected,
-      actual
-    );
+  protected getDescription(detail: string, ...formatArgs: unknown[]) {
+    const message = format(detail, ...formatArgs);
+    return this.descriptionSupplier
+      ? `${this.descriptionSupplier()}: ${message}`
+      : message;
   }
 }

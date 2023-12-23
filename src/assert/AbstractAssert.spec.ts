@@ -5,7 +5,13 @@ import { assertThat } from "..";
 describe("AbstractAssert", () => {
   class ConcreteAssert extends AbstractAssert {}
   const concreteAssert = (value: unknown) => new ConcreteAssert(value);
-  const nestedObject = () => ({ a: "0", b: { c: [1, 2, { d: "3" }] } });
+
+  class CoolClass {
+    cool = true;
+  }
+  class UncoolClass {
+    cool = false;
+  }
 
   describe("isEqualTo", () => {
     it("should not throw when strictly equal", () => {
@@ -15,6 +21,7 @@ describe("AbstractAssert", () => {
     });
 
     it("should not throw when deeply equal", () => {
+      const nestedObject = () => ({ a: "0", b: { c: [1, 2, { d: "3" }] } });
       assertThat(concreteAssert(nestedObject())).successfullyAsserts((a) =>
         a.isEqualTo(nestedObject())
       );
@@ -28,32 +35,17 @@ describe("AbstractAssert", () => {
     });
   });
 
-  describe("isEqualTo", () => {
-    it("should not throw when equal", () => {
-      assertThat(concreteAssert(true)).successfullyAsserts((a) =>
-        a.isEqualTo(true)
-      );
-    });
-
-    it("should throw when not equal", () => {
-      assertThat(concreteAssert(true)).throwsAssertionError(
-        (a) => a.isEqualTo(false),
-        "Expected true to equal false"
-      );
-    });
-  });
-
   describe("isNotEqualTo", () => {
-    it("should not throw when not equal", () => {
-      assertThat(concreteAssert(true)).successfullyAsserts((a) =>
-        a.isNotEqualTo(false)
+    it("should not throw when not deeply equal", () => {
+      assertThat(concreteAssert({ a: 1 })).successfullyAsserts((a) =>
+        a.isNotEqualTo({ a: 2 })
       );
     });
 
-    it("should throw when equal", () => {
-      assertThat(concreteAssert(true)).throwsAssertionError(
-        (a) => a.isNotEqualTo(true),
-        "Expected true not to equal true"
+    it("should throw when deeply equal", () => {
+      assertThat(concreteAssert({ a: 1 })).throwsAssertionError(
+        (a) => a.isNotEqualTo({ a: 1 }),
+        'Expected {"a": 1} not to equal {"a": 1}'
       );
     });
   });
@@ -81,6 +73,39 @@ describe("AbstractAssert", () => {
     it("should use the default description in the error message if not set", () => {
       expect(() => assertThat(true).isEqualTo(false)).toThrow(
         "Expected true to equal false"
+      );
+    });
+  });
+
+  describe("isInstanceOf", () => {
+    it("should not throw when instance of", () => {
+      assertThat(concreteAssert({})).successfullyAsserts((a) =>
+        a.isInstanceOf(Object)
+      );
+      assertThat(concreteAssert(new CoolClass())).successfullyAsserts((a) =>
+        a.isInstanceOf(CoolClass)
+      );
+    });
+
+    it("should throw when not instance of", () => {
+      assertThat(concreteAssert(new UncoolClass())).throwsAssertionError(
+        (a) => a.isInstanceOf(CoolClass),
+        'Expected {"cool": false} to be an instance of CoolClass'
+      );
+    });
+  });
+
+  describe("isNotInstanceOf", () => {
+    it("should not throw when not instance of", () => {
+      assertThat(concreteAssert(new UncoolClass())).successfullyAsserts((a) =>
+        a.isNotInstanceOf(CoolClass)
+      );
+    });
+
+    it("should throw when instance of", () => {
+      assertThat(concreteAssert(new CoolClass())).throwsAssertionError(
+        (a) => a.isNotInstanceOf(CoolClass),
+        'Expected {"cool": true} not to be an instance of CoolClass'
       );
     });
   });

@@ -79,6 +79,42 @@ export abstract class AbstractAssert<T = unknown> {
   }
 
   /**
+   * Asserts that the value is an instance of the provided class.
+   *
+   * @param instanceClass the class
+   * @returns this assert object for chaining
+   */
+  isInstanceOf(instanceClass: new (...args: unknown[]) => unknown): this {
+    if (this.value instanceof instanceClass) {
+      return this;
+    }
+    throw new AssertionError(
+      this.getDescription(
+        "Expected {} to be an instance of " + instanceClass.name,
+        this.value
+      )
+    );
+  }
+
+  /**
+   * Asserts that the value is not an instance of the provided class.
+   *
+   * @param instanceClass the class
+   * @returns this assert object for chaining
+   */
+  isNotInstanceOf(instanceClass: new (...args: unknown[]) => unknown): this {
+    if (!(this.value instanceof instanceClass)) {
+      return this;
+    }
+    throw new AssertionError(
+      this.getDescription(
+        "Expected {} not to be an instance of " + instanceClass.name,
+        this.value
+      )
+    );
+  }
+
+  /**
    * Sets the description of the assertion. This will be used in the error
    * message if an assertion error is thrown.
    *

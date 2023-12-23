@@ -1,3 +1,5 @@
+import stringifyImpl from "json-stringify-pretty-compact";
+
 /**
  * Stringifies the given value into a JSON.
  *
@@ -5,7 +7,7 @@
  * @returns the string representation
  */
 export function stringify(value: unknown): string {
-  return JSON.stringify(value, null, 2);
+  return stringifyImpl(value);
 }
 
 /**
@@ -17,16 +19,18 @@ export function stringify(value: unknown): string {
  * @returns the formatted string
  */
 export function format(str: string, ...values: unknown[]) {
-  let output = str.replaceAll(/{}/g, "%s");
+  // Using a different placeholder because an empty object value stringified is {}
+  const placeholder = "%P%";
+  let output = str.replaceAll(/{}/g, placeholder);
   for (const arg in values) {
-    if (!output.includes("%s")) {
+    if (!output.includes(placeholder)) {
       throw new Error(
         `Too many arguments (${values.length}) for format string "${str}"`
       );
     }
-    output = output.replace("%s", stringify(values[arg]));
+    output = output.replace(placeholder, stringifyImpl(values[arg]));
   }
-  if (output.includes("%s")) {
+  if (output.includes(placeholder)) {
     throw new Error(
       `Too few arguments (${values.length}) for format string "${str}"`
     );

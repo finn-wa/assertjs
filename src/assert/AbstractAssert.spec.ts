@@ -5,15 +5,27 @@ import { assertThat } from "..";
 describe("AbstractAssert", () => {
   class ConcreteAssert extends AbstractAssert {}
   const concreteAssert = (value: unknown) => new ConcreteAssert(value);
+  const nestedObject = () => ({ a: "0", b: { c: [1, 2, { d: "3" }] } });
 
   describe("isEqualTo", () => {
-    it("should not throw when equal", () => {
+    it("should not throw when strictly equal", () => {
       assertThat(concreteAssert(true)).successfullyAsserts((a) =>
         a.isEqualTo(true)
       );
     });
 
-    it("should throw when not equal", () => {});
+    it("should not throw when deeply equal", () => {
+      assertThat(concreteAssert(nestedObject())).successfullyAsserts((a) =>
+        a.isEqualTo(nestedObject())
+      );
+    });
+
+    it("should throw when not equal", () => {
+      assertThat(concreteAssert({ a: 1 })).throwsAssertionError(
+        (a) => a.isEqualTo({ a: 2 }),
+        'Expected {"a": 1} to equal {"a": 2}'
+      );
+    });
   });
 
   describe("isEqualTo", () => {

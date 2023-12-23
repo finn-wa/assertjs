@@ -1,3 +1,4 @@
+import { deepEquals } from "../util/EqualityUtils";
 import { AssertionError } from "../errors/AssertionError";
 import { format } from "../util/StringUtils";
 
@@ -8,13 +9,14 @@ export abstract class AbstractAssert<T = unknown> {
   constructor(readonly value: T) {}
 
   /**
-   * Asserts that the value is equal to the other value.
+   * Asserts that the value is equal to the other value using deep equality
+   * checking.
    *
    * @param other the other value
    * @returns this assert object for chaining
    */
   isEqualTo(other: T): this {
-    if (this.value === other) {
+    if (deepEquals(this.value, other)) {
       return this;
     }
     throw new AssertionError(
@@ -29,7 +31,7 @@ export abstract class AbstractAssert<T = unknown> {
    * @returns this assert object for chaining
    */
   isNotEqualTo(other: T): this {
-    if (this.value !== other) {
+    if (!deepEquals(this.value, other)) {
       return this;
     }
     throw new AssertionError(

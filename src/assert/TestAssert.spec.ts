@@ -1,10 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import { TestAssert } from "./TestAssert";
-import { AbstractAssert } from "./AbstractAssert";
+import { UnknownAssert } from "./UnknownAssert";
 
 describe("TestAssert", () => {
   function testAssert() {
-    return new TestAssert(new AbstractAssert(1));
+    return new TestAssert(new UnknownAssert(1));
   }
 
   describe("successfullyAsserts", () => {
@@ -14,7 +14,7 @@ describe("TestAssert", () => {
 
     it("should throw when the assertion does not return an assert object with the same value", () => {
       expect(() =>
-        testAssert().successfullyAsserts(() => new AbstractAssert(2))
+        testAssert().successfullyAsserts(() => new UnknownAssert(2))
       ).toThrow(
         "Expected the returned assert object to contain the same value as the original"
       );

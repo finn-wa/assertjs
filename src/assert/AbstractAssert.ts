@@ -1,8 +1,7 @@
 import { deepEquals } from "../util/EqualityUtils";
 import { AssertionError } from "../errors/AssertionError";
 import { format } from "../util/StringUtils";
-
-type ClassType<T> = new (...args: any[]) => T;
+import { ClassType } from "../util/Types";
 
 export interface AssertInfo {
   readonly description?: () => string;

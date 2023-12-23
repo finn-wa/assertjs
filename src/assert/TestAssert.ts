@@ -1,5 +1,5 @@
 import { AssertionError } from "../errors/AssertionError";
-import { AbstractAssert } from "./AbstractAssert";
+import { AbstractAssert, AssertInfo } from "./AbstractAssert";
 
 /** Assertions for testing classes that extend AbstractAssert */
 export class TestAssert<T extends AbstractAssert> extends AbstractAssert<T> {
@@ -66,5 +66,9 @@ export class TestAssert<T extends AbstractAssert> extends AbstractAssert<T> {
         "Expected assertion to throw an AssertionError, but it succeeded"
       )
     );
+  }
+
+  protected withInfo(info: AssertInfo): this {
+    return new TestAssert(this.value, info) as this;
   }
 }

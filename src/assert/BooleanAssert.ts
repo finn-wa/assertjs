@@ -1,5 +1,5 @@
 import { AssertionError } from "../errors/AssertionError";
-import { AbstractAssert } from "./AbstractAssert";
+import { AbstractAssert, AssertInfo } from "./AbstractAssert";
 
 /**
  * Class for making assertions about boolean values.
@@ -27,5 +27,9 @@ export class BooleanAssert extends AbstractAssert<boolean> {
     throw new AssertionError(
       this.getDescription("Expected {} to be false", this.value)
     );
+  }
+
+  protected withInfo(info: AssertInfo): this {
+    return new BooleanAssert(this.value, info) as this;
   }
 }

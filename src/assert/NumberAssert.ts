@@ -1,12 +1,12 @@
 import { AssertionError } from "../errors/AssertionError";
-import { AbstractAssert } from "./AbstractAssert";
+import { AbstractAssert, AssertInfo } from "./AbstractAssert";
 import { ComparatorPredicates } from "./predicates/ComparatorPredicates";
 
 export class NumberAssert extends AbstractAssert<number> {
   readonly compare: ComparatorPredicates<number>;
 
-  constructor(value: number) {
-    super(value);
+  constructor(value: number, info: AssertInfo = {}) {
+    super(value, info);
     this.compare = new ComparatorPredicates(value, (a, b) => a - b);
   }
 
@@ -80,5 +80,9 @@ export class NumberAssert extends AbstractAssert<number> {
         other
       )
     );
+  }
+
+  protected withInfo(info: AssertInfo): this {
+    return new NumberAssert(this.value, info) as this;
   }
 }

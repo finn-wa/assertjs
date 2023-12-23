@@ -1,10 +1,15 @@
 import { describe, expect, it } from "bun:test";
-import { AbstractAssert } from "./AbstractAssert";
+import { AbstractAssert, AssertInfo } from "./AbstractAssert";
 import { assertThat } from "..";
 import { AssertionError } from "../errors/AssertionError";
 
 describe("AbstractAssert", () => {
-  class Assert<T> extends AbstractAssert<T> {}
+  class Assert<T> extends AbstractAssert<T> {
+    protected withInfo(info: AssertInfo): this {
+      return new Assert(this.value, info) as this;
+    }
+  }
+
   function abstractAssert<T>(value: T): AbstractAssert<T> {
     return new Assert(value);
   }

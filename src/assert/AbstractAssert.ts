@@ -4,11 +4,22 @@ import { format } from "../util/StringUtils";
 
 type ClassType<T> = new (...args: any[]) => T;
 
+export interface AssertInfo {
+  readonly description?: () => string;
+}
+
 /** Base class for all assertions. */
 export abstract class AbstractAssert<T = unknown> {
-  protected descriptionSupplier?: () => string;
+  constructor(readonly value: T, readonly info: AssertInfo = {}) {}
 
-  constructor(readonly value: T) {}
+  /**
+   * Returns a copy of this assert object with the provided info. Assert objects
+   * are immutable, so properties cannot be changed directly.
+   *
+   * @param info the new info property value
+   * @returns a copy of this assert object with the provided info
+   */
+  protected abstract withInfo(info: AssertInfo): this;
 
   /**
    * Asserts that the value is equal to the other value using deep equality
@@ -239,17 +250,12 @@ export abstract class AbstractAssert<T = unknown> {
    * message if an assertion error is thrown.
    *
    * @param description the description or lazy function returning a description
-   * @returns this assert object for chaining
+   * @returns an assert object for chaining
    */
   describedAs(description: string | (() => string)): this {
-    if (typeof description === "function") {
-      this.descriptionSupplier = description;
-    } else if (typeof description === "string") {
-      this.descriptionSupplier = () => description;
-    } else {
-      throw new Error("Invalid description: " + description);
-    }
-    return this;
+    let descriptionFn =
+      typeof description === "function" ? description : () => description;
+    return this.withInfo({ ...this.info, description: descriptionFn });
   }
 
   /**
@@ -262,8 +268,8 @@ export abstract class AbstractAssert<T = unknown> {
    */
   protected getDescription(detail: string, ...formatArgs: unknown[]) {
     const message = format(detail, ...formatArgs);
-    return this.descriptionSupplier
-      ? `${this.descriptionSupplier()}: ${message}`
+    return this.info.description
+      ? `${this.info.description()}: ${message}`
       : message;
   }
 }

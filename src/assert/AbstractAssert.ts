@@ -2,7 +2,7 @@ import { deepEquals } from "../util/EqualityUtils";
 import { AssertionError } from "../errors/AssertionError";
 import { format } from "../util/StringUtils";
 
-type ClassType<T> = new (...args: unknown[]) => T;
+type ClassType<T> = new (...args: any[]) => T;
 
 /** Base class for all assertions. */
 export abstract class AbstractAssert<T = unknown> {
@@ -74,7 +74,7 @@ export abstract class AbstractAssert<T = unknown> {
     }
     throw new AssertionError(
       this.getDescription(
-        "Expected {} not to be the same as the other value using strict equality",
+        "Expected {} not to be the same as the provided value using strict equality",
         this.value
       )
     );
@@ -87,7 +87,7 @@ export abstract class AbstractAssert<T = unknown> {
    * @returns this assert object for chaining, with the value narrowed to the
    * 	provided class
    */
-  isInstanceOf<U extends T>(instanceClass: ClassType<U>): AbstractAssert<U> {
+  isInstanceOf<U>(instanceClass: ClassType<U>): AbstractAssert<U> {
     if (this.value instanceof instanceClass) {
       return this as unknown as AbstractAssert<U>;
     }

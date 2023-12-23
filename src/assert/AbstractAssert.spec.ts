@@ -4,9 +4,9 @@ import { assertThat } from "..";
 import { AssertionError } from "../errors/AssertionError";
 
 describe("AbstractAssert", () => {
-  class ConcreteAssert<T> extends AbstractAssert<T> {}
-  function abstractAssert<T>(value: T): ConcreteAssert<T> {
-    return new ConcreteAssert(value);
+  class Assert<T> extends AbstractAssert<T> {}
+  function abstractAssert<T>(value: T): AbstractAssert<T> {
+    return new Assert(value);
   }
 
   class CoolClass {
@@ -31,37 +31,53 @@ describe("AbstractAssert", () => {
     });
 
     it("should throw when not equal", () => {
-      assertThat(abstractAssert({ a: 1 })).throwsAssertionError(
-        (a) => a.isEqualTo({ a: 2 }),
-        'Expected {"a": 1} to equal {"a": 2}'
+      assertThat(abstractAssert({ x: 1 })).throwsAssertionError(
+        (a) => a.isEqualTo({ x: 2 }),
+        'Expected {"x": 1} to equal {"x": 2}'
       );
     });
   });
 
   describe("isNotEqualTo", () => {
     it("should not throw when not deeply equal", () => {
-      assertThat(abstractAssert({ a: 1 })).successfullyAsserts((a) =>
-        a.isNotEqualTo({ a: 2 })
+      assertThat(abstractAssert({ x: 1 })).successfullyAsserts((a) =>
+        a.isNotEqualTo({ x: 2 })
       );
     });
 
     it("should throw when deeply equal", () => {
-      assertThat(abstractAssert({ a: 1 })).throwsAssertionError(
-        (a) => a.isNotEqualTo({ a: 1 }),
-        'Expected {"a": 1} not to equal {"a": 1}'
+      assertThat(abstractAssert({ x: 1 })).throwsAssertionError(
+        (a) => a.isNotEqualTo({ x: 1 }),
+        'Expected {"x": 1} not to equal {"x": 1}'
       );
     });
   });
 
   describe("isSameAs", () => {
     it("should not throw when same", () => {
-      const value = {};
-      assertThat(value).isSameAs(value);
+      const value = { b: 2 };
+      assertThat(abstractAssert(value)).successfullyAsserts((a) =>
+        a.isSameAs(value)
+      );
     });
 
     it("should throw when not same", () => {
-      expect(() => assertThat({}).isSameAs({})).toThrow(
-        "Expected {} to be the same as {} using strict equality"
+      assertThat(abstractAssert({ x: 2 })).throwsAssertionError(
+        (a) => a.isSameAs({ x: 2 }),
+        'Expected {"x": 2} to be the same as {"x": 2} using strict equality'
+      );
+    });
+  });
+
+  describe("isNotSameAs", () => {
+    it("should not throw when not same", () => {
+      assertThat({ x: 1 }).isNotSameAs({ x: 1 });
+    });
+
+    it("should throw when same", () => {
+      const value = { x: 1 };
+      expect(() => assertThat(value).isNotSameAs(value)).toThrow(
+        'Expected {"x": 1} not to be the same as the provided value using strict equality'
       );
     });
   });

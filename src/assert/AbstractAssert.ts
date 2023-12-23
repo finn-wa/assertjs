@@ -115,6 +115,34 @@ export abstract class AbstractAssert<T = unknown> {
   }
 
   /**
+   * Asserts that the value is truthy.
+   *
+   * @returns this assert object for chaining
+   */
+  isTruthy(): this {
+    if (this.value) {
+      return this;
+    }
+    throw new AssertionError(
+      this.getDescription("Expected {} to be truthy", this.value)
+    );
+  }
+
+  /**
+   * Asserts that the value is falsy.
+   *
+   * @returns this assert object for chaining
+   */
+  isFalsy(): this {
+    if (!this.value) {
+      return this;
+    }
+    throw new AssertionError(
+      this.getDescription("Expected {} to be falsy", this.value)
+    );
+  }
+
+  /**
    * Sets the description of the assertion. This will be used in the error
    * message if an assertion error is thrown.
    *

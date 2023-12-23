@@ -109,4 +109,50 @@ describe("AbstractAssert", () => {
       );
     });
   });
+
+  describe("isTruthy", () => {
+    it("should not throw when truthy", () => {
+      assertThat(concreteAssert(true)).successfullyAsserts((a) => a.isTruthy());
+      assertThat(concreteAssert(1)).successfullyAsserts((a) => a.isTruthy());
+      assertThat(concreteAssert(" ")).successfullyAsserts((a) => a.isTruthy());
+    });
+
+    it("should throw when not truthy", () => {
+      assertThat(concreteAssert(false)).throwsAssertionError(
+        (a) => a.isTruthy(),
+        "Expected false to be truthy"
+      );
+      assertThat(concreteAssert(0)).throwsAssertionError(
+        (a) => a.isTruthy(),
+        "Expected 0 to be truthy"
+      );
+      assertThat(concreteAssert("")).throwsAssertionError(
+        (a) => a.isTruthy(),
+        'Expected "" to be truthy'
+      );
+    });
+  });
+
+  describe("isFalsy", () => {
+    it("should not throw when falsy", () => {
+      assertThat(concreteAssert(false)).successfullyAsserts((a) => a.isFalsy());
+      assertThat(concreteAssert(0)).successfullyAsserts((a) => a.isFalsy());
+      assertThat(concreteAssert("")).successfullyAsserts((a) => a.isFalsy());
+    });
+
+    it("should throw when not falsy", () => {
+      assertThat(concreteAssert(true)).throwsAssertionError(
+        (a) => a.isFalsy(),
+        "Expected true to be falsy"
+      );
+      assertThat(concreteAssert(1)).throwsAssertionError(
+        (a) => a.isFalsy(),
+        "Expected 1 to be falsy"
+      );
+      assertThat(concreteAssert(" ")).throwsAssertionError(
+        (a) => a.isFalsy(),
+        'Expected " " to be falsy'
+      );
+    });
+  });
 });

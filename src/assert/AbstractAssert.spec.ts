@@ -3,32 +3,34 @@ import { AbstractAssert } from "./AbstractAssert";
 import { assertThat } from "..";
 
 describe("AbstractAssert", () => {
-  class ConcreteAssert extends AbstractAssert {}
-  const concreteAssert = (value: unknown) => new ConcreteAssert(value);
+  class ConcreteAssert<T> extends AbstractAssert<T> {}
+  function abstractAssert<T>(value: T): ConcreteAssert<T> {
+    return new ConcreteAssert(value);
+  }
 
   class CoolClass {
     cool = true;
   }
   class UncoolClass {
-    cool = false;
+    uncool = true;
   }
 
   describe("isEqualTo", () => {
     it("should not throw when strictly equal", () => {
-      assertThat(concreteAssert(true)).successfullyAsserts((a) =>
+      assertThat(abstractAssert(true)).successfullyAsserts((a) =>
         a.isEqualTo(true)
       );
     });
 
     it("should not throw when deeply equal", () => {
       const nestedObject = () => ({ a: "0", b: { c: [1, 2, { d: "3" }] } });
-      assertThat(concreteAssert(nestedObject())).successfullyAsserts((a) =>
+      assertThat(abstractAssert(nestedObject())).successfullyAsserts((a) =>
         a.isEqualTo(nestedObject())
       );
     });
 
     it("should throw when not equal", () => {
-      assertThat(concreteAssert({ a: 1 })).throwsAssertionError(
+      assertThat(abstractAssert({ a: 1 })).throwsAssertionError(
         (a) => a.isEqualTo({ a: 2 }),
         'Expected {"a": 1} to equal {"a": 2}'
       );
@@ -37,13 +39,13 @@ describe("AbstractAssert", () => {
 
   describe("isNotEqualTo", () => {
     it("should not throw when not deeply equal", () => {
-      assertThat(concreteAssert({ a: 1 })).successfullyAsserts((a) =>
+      assertThat(abstractAssert({ a: 1 })).successfullyAsserts((a) =>
         a.isNotEqualTo({ a: 2 })
       );
     });
 
     it("should throw when deeply equal", () => {
-      assertThat(concreteAssert({ a: 1 })).throwsAssertionError(
+      assertThat(abstractAssert({ a: 1 })).throwsAssertionError(
         (a) => a.isNotEqualTo({ a: 1 }),
         'Expected {"a": 1} not to equal {"a": 1}'
       );
@@ -79,54 +81,74 @@ describe("AbstractAssert", () => {
 
   describe("isInstanceOf", () => {
     it("should not throw when instance of", () => {
-      assertThat(concreteAssert({})).successfullyAsserts((a) =>
+      assertThat(abstractAssert({})).successfullyAsserts((a) =>
         a.isInstanceOf(Object)
       );
-      assertThat(concreteAssert(new CoolClass())).successfullyAsserts((a) =>
+      assertThat(abstractAssert(new CoolClass())).successfullyAsserts((a) =>
         a.isInstanceOf(CoolClass)
       );
     });
 
     it("should throw when not instance of", () => {
-      assertThat(concreteAssert(new UncoolClass())).throwsAssertionError(
+      assertThat(
+        abstractAssert(new UncoolClass() as unknown)
+      ).throwsAssertionError(
         (a) => a.isInstanceOf(CoolClass),
         'Expected {"cool": false} to be an instance of CoolClass'
       );
+    });
+
+    it("should narrow the value type", () => {
+      const unknownValue: unknown = new CoolClass();
+      const mustBeCool = (_: AbstractAssert<CoolClass>) => {};
+      // @ts-expect-error - unknown if cool
+      mustBeCool(abstractAssert(unknownValue));
+      // no error - confirmed cool
+      mustBeCool(abstractAssert(unknownValue).isInstanceOf(CoolClass));
     });
   });
 
   describe("isNotInstanceOf", () => {
     it("should not throw when not instance of", () => {
-      assertThat(concreteAssert(new UncoolClass())).successfullyAsserts((a) =>
+      assertThat(abstractAssert(new UncoolClass())).successfullyAsserts((a) =>
         a.isNotInstanceOf(CoolClass)
       );
     });
 
     it("should throw when instance of", () => {
-      assertThat(concreteAssert(new CoolClass())).throwsAssertionError(
+      assertThat(abstractAssert(new CoolClass())).throwsAssertionError(
         (a) => a.isNotInstanceOf(CoolClass),
         'Expected {"cool": true} not to be an instance of CoolClass'
       );
+    });
+
+    it("should narrow the value type", () => {
+      const unknownValue = new CoolClass() as CoolClass | UncoolClass;
+      const mustBeCool = (_: AbstractAssert<CoolClass>) => {};
+      // @ts-expect-error - could be uncool
+      mustBeCool(abstractAssert(unknownValue));
+      // no error - confirmed cool
+      mustBeCool(abstractAssert(unknownValue).isNotInstanceOf(UncoolClass));
     });
   });
 
   describe("isTruthy", () => {
     it("should not throw when truthy", () => {
-      assertThat(concreteAssert(true)).successfullyAsserts((a) => a.isTruthy());
-      assertThat(concreteAssert(1)).successfullyAsserts((a) => a.isTruthy());
-      assertThat(concreteAssert(" ")).successfullyAsserts((a) => a.isTruthy());
+      assertThat(abstractAssert(true)).successfullyAsserts((a) => a.isTruthy());
+      assertThat(abstractAssert(1)).successfullyAsserts((a) => a.isTruthy());
+      assertThat(abstractAssert(" ")).successfullyAsserts((a) => a.isTruthy());
     });
 
     it("should throw when not truthy", () => {
-      assertThat(concreteAssert(false)).throwsAssertionError(
+      assertThat(abstractAssert(false)).throwsAssertionError(
         (a) => a.isTruthy(),
         "Expected false to be truthy"
       );
-      assertThat(concreteAssert(0)).throwsAssertionError(
+      assertThat(abstractAssert(0)).throwsAssertionError(
         (a) => a.isTruthy(),
         "Expected 0 to be truthy"
       );
-      assertThat(concreteAssert("")).throwsAssertionError(
+      assertThat(abstractAssert("")).throwsAssertionError(
         (a) => a.isTruthy(),
         'Expected "" to be truthy'
       );
@@ -135,21 +157,21 @@ describe("AbstractAssert", () => {
 
   describe("isFalsy", () => {
     it("should not throw when falsy", () => {
-      assertThat(concreteAssert(false)).successfullyAsserts((a) => a.isFalsy());
-      assertThat(concreteAssert(0)).successfullyAsserts((a) => a.isFalsy());
-      assertThat(concreteAssert("")).successfullyAsserts((a) => a.isFalsy());
+      assertThat(abstractAssert(false)).successfullyAsserts((a) => a.isFalsy());
+      assertThat(abstractAssert(0)).successfullyAsserts((a) => a.isFalsy());
+      assertThat(abstractAssert("")).successfullyAsserts((a) => a.isFalsy());
     });
 
     it("should throw when not falsy", () => {
-      assertThat(concreteAssert(true)).throwsAssertionError(
+      assertThat(abstractAssert(true)).throwsAssertionError(
         (a) => a.isFalsy(),
         "Expected true to be falsy"
       );
-      assertThat(concreteAssert(1)).throwsAssertionError(
+      assertThat(abstractAssert(1)).throwsAssertionError(
         (a) => a.isFalsy(),
         "Expected 1 to be falsy"
       );
-      assertThat(concreteAssert(" ")).throwsAssertionError(
+      assertThat(abstractAssert(" ")).throwsAssertionError(
         (a) => a.isFalsy(),
         'Expected " " to be falsy'
       );

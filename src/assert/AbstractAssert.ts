@@ -2,6 +2,8 @@ import { deepEquals } from "../util/EqualityUtils";
 import { AssertionError } from "../errors/AssertionError";
 import { format } from "../util/StringUtils";
 
+type ClassType<T> = new (...args: unknown[]) => T;
+
 /** Base class for all assertions. */
 export abstract class AbstractAssert<T = unknown> {
   protected descriptionSupplier?: () => string;
@@ -84,9 +86,9 @@ export abstract class AbstractAssert<T = unknown> {
    * @param instanceClass the class
    * @returns this assert object for chaining
    */
-  isInstanceOf(instanceClass: new (...args: unknown[]) => unknown): this {
+  isInstanceOf<U extends T>(instanceClass: ClassType<U>): AbstractAssert<U> {
     if (this.value instanceof instanceClass) {
-      return this;
+      return this as unknown as AbstractAssert<U>;
     }
     throw new AssertionError(
       this.getDescription(
@@ -102,9 +104,11 @@ export abstract class AbstractAssert<T = unknown> {
    * @param instanceClass the class
    * @returns this assert object for chaining
    */
-  isNotInstanceOf(instanceClass: new (...args: unknown[]) => unknown): this {
+  isNotInstanceOf<U>(
+    instanceClass: ClassType<U>
+  ): AbstractAssert<Exclude<T, U>> {
     if (!(this.value instanceof instanceClass)) {
-      return this;
+      return this as AbstractAssert<Exclude<T, U>>;
     }
     throw new AssertionError(
       this.getDescription(

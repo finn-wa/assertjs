@@ -1,7 +1,5 @@
-import { Assert } from "./Assert";
+import { AbstractAssert } from "./AbstractAssert";
 
-export class ArrayAssert<T extends ArrayLike<unknown>> extends Assert<T> {
-  isEqualTo(other: T): void {
-    throw new Error("Method not implemented.");
-  }
-}
+export class ArrayAssert<
+  T extends ArrayLike<unknown>
+> extends AbstractAssert<T> {}

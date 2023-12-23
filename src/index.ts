@@ -22,9 +22,3 @@ export function assertThat(value: unknown): UnknownAssert {
   }
   return new UnknownAssert(value);
 }
-
-const num = 4;
-const str = "4";
-const arr = [4];
-const unk = true as unknown;
-// assertThat({boogy: true}).is

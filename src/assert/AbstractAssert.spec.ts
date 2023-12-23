@@ -1,6 +1,7 @@
 import { describe, expect, it } from "bun:test";
 import { AbstractAssert } from "./AbstractAssert";
 import { assertThat } from "..";
+import { AssertionError } from "../errors/AssertionError";
 
 describe("AbstractAssert", () => {
   class ConcreteAssert<T> extends AbstractAssert<T> {}
@@ -234,6 +235,43 @@ describe("AbstractAssert", () => {
       assertThat(abstractAssert(null as unknown)).throwsAssertionError(
         (a) => a.isUndefined(),
         "Expected null to be undefined"
+      );
+    });
+  });
+
+  describe("satisfies", () => {
+    it("should not throw when the value satisfies the predicate", () => {
+      assertThat(abstractAssert(1)).successfullyAsserts((a) =>
+        a.satisfies((v) => v === 1)
+      );
+    });
+
+    it("should throw when the value does not satisfy the predicate", () => {
+      assertThat(abstractAssert(2)).throwsAssertionError(
+        (a) => a.satisfies((v) => v === 1),
+        "Expected 2 to satisfy the predicate"
+      );
+    });
+
+    it("should not throw when the function returns void", () => {
+      assertThat(abstractAssert(1)).successfullyAsserts((a) =>
+        a.satisfies(() => {})
+      );
+    });
+
+    it("should not throw when the function returns an assertion object", () => {
+      assertThat(abstractAssert(1)).successfullyAsserts((a) =>
+        a.satisfies(() => abstractAssert(1).isEqualTo(1))
+      );
+    });
+
+    it("should propagate any errors thrown by the function", () => {
+      assertThat(abstractAssert(1)).throwsAssertionError(
+        (a) =>
+          a.satisfies(() => {
+            throw new AssertionError("bad value");
+          }),
+        "bad value"
       );
     });
   });

@@ -208,6 +208,33 @@ export abstract class AbstractAssert<T = unknown> {
   }
 
   /**
+   * Asserts that the value satisfies the provided predicate function.
+   *
+   * @param predicate a predicate function that returns a boolean.
+   * 	If the predicate returns false, an assertion error is thrown.
+   * @returns this assert object for chaining
+   */
+  satisfies(predicate: (value: T) => boolean): this;
+  /**
+   * Asserts that the value passes the assertions in the consuming function.
+   *
+   * @param assertions a function that accepts the value, containing assertions
+   * @returns this assert object for chaining
+   */
+  satisfies(assertions: (value: T) => void | AbstractAssert): this;
+  satisfies(
+    assertionsOrPredicate: (value: T) => boolean | void | AbstractAssert
+  ): this {
+    const result = assertionsOrPredicate(this.value);
+    if (result === false) {
+      throw new AssertionError(
+        this.getDescription("Expected {} to satisfy the predicate", this.value)
+      );
+    }
+    return this;
+  }
+
+  /**
    * Sets the description of the assertion. This will be used in the error
    * message if an assertion error is thrown.
    *

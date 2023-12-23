@@ -84,7 +84,8 @@ export abstract class AbstractAssert<T = unknown> {
    * Asserts that the value is an instance of the provided class.
    *
    * @param instanceClass the class
-   * @returns this assert object for chaining
+   * @returns this assert object for chaining, with the value narrowed to the
+   * 	provided class
    */
   isInstanceOf<U extends T>(instanceClass: ClassType<U>): AbstractAssert<U> {
     if (this.value instanceof instanceClass) {
@@ -102,7 +103,8 @@ export abstract class AbstractAssert<T = unknown> {
    * Asserts that the value is not an instance of the provided class.
    *
    * @param instanceClass the class
-   * @returns this assert object for chaining
+   * @returns this assert object for chaining, with the value narrowed to
+   * 	exclude the provided class
    */
   isNotInstanceOf<U>(
     instanceClass: ClassType<U>
@@ -115,6 +117,65 @@ export abstract class AbstractAssert<T = unknown> {
         "Expected {} not to be an instance of " + instanceClass.name,
         this.value
       )
+    );
+  }
+
+  /**
+   * Asserts that the value is null.
+   *
+   * @returns this assert object for chaining, with the value narrowed to null
+   */
+  isNull(): AbstractAssert<null> {
+    if (this.value === null) {
+      return this as AbstractAssert<null>;
+    }
+    throw new AssertionError(
+      this.getDescription("Expected {} to be null", this.value)
+    );
+  }
+
+  /**
+   * Asserts that the value is not null.
+   *
+   * @returns this assert object for chaining, with the value narrowed to
+   * 	exclude null
+   */
+  isNotNull(): AbstractAssert<Exclude<T, null>> {
+    if (this.value !== null) {
+      return this as AbstractAssert<Exclude<T, null>>;
+    }
+    throw new AssertionError(
+      this.getDescription("Expected value not to be null")
+    );
+  }
+
+  /**
+   * Asserts that the value is not undefined.
+   *
+   * @returns this assert object for chaining, with the value narrowed to
+   * 	exclude undefined
+   */
+  isDefined(): AbstractAssert<Exclude<T, undefined>> {
+    if (this.value !== undefined) {
+      return this as AbstractAssert<Exclude<T, undefined>>;
+    }
+    throw new AssertionError(
+      this.getDescription("Expected value not to be undefined")
+    );
+  }
+
+  /**
+   * Asserts that the value is undefined.
+   *
+   * @returns this assert object for chaining, with the value narrowed to
+   * 	undefined
+   */
+  isUndefined(): AbstractAssert<undefined> {
+    if (this.value === undefined) {
+      return this as AbstractAssert<undefined>;
+    }
+    throw new AssertionError(
+      this.getDescription("Expected {} to be undefined", this.value)
     );
   }
 

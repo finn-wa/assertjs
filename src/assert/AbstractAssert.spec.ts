@@ -94,7 +94,7 @@ describe("AbstractAssert", () => {
         abstractAssert(new UncoolClass() as unknown)
       ).throwsAssertionError(
         (a) => a.isInstanceOf(CoolClass),
-        'Expected {"cool": false} to be an instance of CoolClass'
+        'Expected {"uncool": true} to be an instance of CoolClass'
       );
     });
 
@@ -174,6 +174,66 @@ describe("AbstractAssert", () => {
       assertThat(abstractAssert(" ")).throwsAssertionError(
         (a) => a.isFalsy(),
         'Expected " " to be falsy'
+      );
+    });
+  });
+
+  describe("isNull", () => {
+    it("should throw when not null", () => {
+      assertThat(abstractAssert(undefined as unknown)).throwsAssertionError(
+        (a) => a.isNull(),
+        "Expected undefined to be null"
+      );
+    });
+
+    it("should not throw when null", () => {
+      assertThat(abstractAssert(null)).successfullyAsserts((a) => a.isNull());
+    });
+  });
+
+  describe("isNotNull", () => {
+    it("should not throw when not null", () => {
+      assertThat(abstractAssert(undefined)).successfullyAsserts((a) =>
+        a.isNotNull()
+      );
+      assertThat(abstractAssert(1)).successfullyAsserts((a) => a.isNotNull());
+    });
+
+    it("should throw when null", () => {
+      assertThat(abstractAssert(null)).throwsAssertionError(
+        (a) => a.isNotNull(),
+        "Expected value not to be null"
+      );
+    });
+  });
+
+  describe("isDefined", () => {
+    it("should not throw when defined", () => {
+      assertThat(abstractAssert(1)).successfullyAsserts((a) => a.isDefined());
+      assertThat(abstractAssert(null)).successfullyAsserts((a) =>
+        a.isDefined()
+      );
+    });
+
+    it("should throw when not defined", () => {
+      assertThat(abstractAssert(undefined)).throwsAssertionError(
+        (a) => a.isDefined(),
+        "Expected value not to be undefined"
+      );
+    });
+  });
+
+  describe("isUndefined", () => {
+    it("should not throw when undefined", () => {
+      assertThat(abstractAssert(undefined)).successfullyAsserts((a) =>
+        a.isUndefined()
+      );
+    });
+
+    it("should throw when not undefined", () => {
+      assertThat(abstractAssert(null as unknown)).throwsAssertionError(
+        (a) => a.isUndefined(),
+        "Expected null to be undefined"
       );
     });
   });
